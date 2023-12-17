@@ -3,40 +3,42 @@ package com.coxey.app.system;
 
 import com.coxey.app.request.Request;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class BankFrontSystem {
-    private Queue<Request> requestQueue;
-    private int capacity;
+    /**
+     * По заданию требуется очередь, которая будет содержать в себе не более 2 заявок
+     * Из знаний, полученных на лекции, знаю, что есть потокобезопасные коллекции,
+     * в которых есть классы, которые реализуют блокирующие очереди
+     * Делаем вывод, что нам нужен какой-то класс из блокирующих очередей
+     * Прочитав информацию о классах блокирующих очередей,
+     * я сделал вывод, что лучше всего использовать ArrayBlockingQueue<>()
+     * Почему сделан такой вывод
+     * 1) Над нужна очередь, где мы будем применять принцип FIFO, чтобы те
+     * заявки которые пришли первые, первыми обработались
+     * 2) Нам нужно указать initialCapacity, чтобы мы смогли установить
+     * количество заявок, которые могут храниться в очереди (это по заданию)
+     */
+    private final BlockingQueue<Request> requestQueue;
 
     public BankFrontSystem(int capacity) {
-        this.capacity = capacity;
-        requestQueue = new ArrayDeque<>();
+        requestQueue = new ArrayBlockingQueue<>(capacity);
     }
 
-    public synchronized void addRequest(Request request) {
-        while(requestQueue.size() >= capacity) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+    public void addRequest(Request request) {
+        try {
+            requestQueue.put(request);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        requestQueue.add(request);
-        notifyAll();
     }
 
-    public synchronized Request getRequest() {
-        while(requestQueue.size() < 1) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+    public Request getRequest() {
+        try {
+            return requestQueue.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        var returnRequest = requestQueue.poll();
-        notifyAll();
-        return returnRequest;
     }
 }
