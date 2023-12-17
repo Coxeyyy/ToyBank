@@ -5,7 +5,7 @@ import com.coxey.app.request.Request;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class BankBackSystem {
-    private AtomicLong balanceBank = new AtomicLong(10_000);
+    private final AtomicLong balanceBank = new AtomicLong(10_000);
 
     public void getRequestFromHandler(Request request) {
         var typeRequest = request.getRequestType();
