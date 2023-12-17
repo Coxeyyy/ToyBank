@@ -7,34 +7,36 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class BankFrontSystem {
-    private Queue<Request> requestQueue = new ArrayDeque<>();
+    private Queue<Request> requestQueue;
+    private int capacity;
 
-    public Queue<Request> getRequestQueue() {
-        return requestQueue;
+    public BankFrontSystem(int capacity) {
+        this.capacity = capacity;
+        requestQueue = new ArrayDeque<>();
     }
 
     public synchronized void addRequest(Request request) {
-        if(requestQueue.size() == 2) {
-            while(!requestQueue.isEmpty()) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        requestQueue.add(request);
-        while(!requestQueue.isEmpty()) {
+        while(requestQueue.size() >= capacity) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        requestQueue.add(request);
+        notifyAll();
     }
 
     public synchronized Request getRequest() {
+        while(requestQueue.size() < 1) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        var returnRequest = requestQueue.poll();
         notifyAll();
-        return requestQueue.poll();
+        return returnRequest;
     }
 }

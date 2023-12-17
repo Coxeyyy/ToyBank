@@ -1,7 +1,7 @@
 package com.coxey.app.request;
 
 public enum RequestType {
-    getCredit,
-    repaymentCredit,
+    GET_CREDIT,
+    REPAYMENT_CREDIT,
     ;
 }

@@ -1,35 +1,38 @@
 package com.coxey.app.system;
 
 import com.coxey.app.request.Request;
-import com.coxey.app.request.RequestType;
 
 public class BankBackSystem {
-    private volatile long balanceBank = 10_000;
+    private long balanceBank = 10_000;
+    private Request request;
 
-    public synchronized void getRequestFromHandler(Request request) {
-        if(request.getRequestType() == RequestType.getCredit) {
-            giveCredit(request.getAmount());
-        }
-        if(request.getRequestType() == RequestType.repaymentCredit) {
-            repaymentCredit(request.getAmount());
+    public void getRequestFromHandler(Request request) {
+        this.request = request;
+        var typeRequest = request.getRequestType();
+        switch(typeRequest) {
+            case GET_CREDIT:
+                giveCredit(request.getAmount());
+                break;
+            case REPAYMENT_CREDIT:
+                repaymentCredit(request.getAmount());
+                break;
         }
     }
 
     public synchronized void giveCredit(long amount) {
         if(balanceBank - amount < 0) {
-            System.out.printf("Бэк система: Заявка отклонена. Сумма кредита больше, чем сумма БА: %d\r\n", balanceBank);
+            System.out.printf("Бэк система: ЗАЯВКА ОТКЛОНЕНА от %s. Сумма кредита %d больше, чем остаток" +
+                            " денег банка: %d\r\n", request.getName(), amount, balanceBank);
             return;
         }
         balanceBank -= amount;
-        System.out.printf("Бэк система: Клиенту %s выдан кредит на сумму: %d  баланс банка: %d\r\n",
-                Thread.currentThread().getName(), amount, balanceBank);
-        notifyAll();
+        System.out.printf("Бэк система: %s УСПЕШНО ВЫДАН кредит на сумму: %d  баланс банка: %d\r\n",
+                request.getName(), amount, balanceBank);
     }
 
     public synchronized void repaymentCredit(long amount) {
         balanceBank += amount;
-        System.out.printf("Бэк система: Поток %s отправил сигнал о пополнении счета, balance = %d\r\n",
-                Thread.currentThread().getName(), balanceBank);
-        notifyAll();
+        System.out.printf("Бэк система: Банковский счет от %s ПОПОЛНЕН, balance = %d\r\n",
+                request.getName(), balanceBank);
     }
 }
