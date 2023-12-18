@@ -25,7 +25,7 @@ public class BankBackSystem {
                             " банка. Остаток банка: %d\r\n", request.getName(), amount, balanceBank.get());
             return;
         }
-        balanceBank.updateAndGet((balance) -> balance + amount);
+        balanceBank.updateAndGet((balance) -> balance - amount);
         System.out.printf("Бэк система: %s УСПЕШНО ВЫДАН кредит на сумму: %d  баланс банка: %d\r\n",
                 request.getName(), amount, balanceBank.get());
     }
