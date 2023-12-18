@@ -25,34 +25,19 @@ public class BankBackSystem {
                             " банка. Остаток банка: %d\r\n", request.getName(), amount, balanceBank.get());
             return;
         }
-        boolean success = false;
-        while(!success) {
-            long expValue = balanceBank.get();
-            long newValue = expValue - amount;
-            success = balanceBank.compareAndSet(expValue, newValue);
-        }
+        balanceBank.updateAndGet((balance) -> balance + amount);
         System.out.printf("Бэк система: %s УСПЕШНО ВЫДАН кредит на сумму: %d  баланс банка: %d\r\n",
                 request.getName(), amount, balanceBank.get());
     }
 
     public void repaymentCredit(long amount, Request request) {
-        boolean success = false;
-        while(!success) {
-            long expValue = balanceBank.get();
-            long newValue = expValue + amount;
-            success = balanceBank.compareAndSet(expValue, newValue);
-        }
+        balanceBank.updateAndGet((balance) -> balance + amount);
         System.out.printf("Бэк система: Банковский счет от %s ПОПОЛНЕН, balance = %d\r\n",
                 request.getName(), balanceBank.get());
     }
 
     public void addBalanceBank(long amount) {
-        boolean success = false;
-        while(!success) {
-            long expValue = balanceBank.get();
-            long newValue = expValue + amount;
-            success = balanceBank.compareAndSet(expValue, newValue);
-        }
+        balanceBank.updateAndGet((balance) -> balance + amount);
         System.out.println("Баланс банка после внесения изменения от другой системы: " +balanceBank.get());
     }
 }
